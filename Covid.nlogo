@@ -1,12 +1,18 @@
-turtles-own [
-  flockmates         ;; agentset of nearby turtles
+breed [distanziatori distanziatore]
+breed [persone persona]
+
+
+persone-own [
+  flockmates         ;; agentset of nearby persone
   nearest-neighbor   ;; closest one of our flockmates
-  vicini-raggio
-  vicino
-  patch-raggio
+  distanziatori-visti
 ]
 
 
+distanziatori-own [
+  persone-viste
+  visione
+]
 
 globals [
   giro
@@ -15,48 +21,87 @@ globals [
 
 to setup
   clear-all
-  create-turtles population
+  create-persone population
     [ set color yellow - 2 + random 7  ;; random shades look nice
       set size 1.5  ;; easier to see
       setxy random-xcor random-ycor
       set shape "person"
       set flockmates no-turtles ]
+  create-distanziatori 4
+  [
+    set color blue  ;; random shades look nice
+      set size 2  ;; easier to see
+      setxy random-xcor random-ycor
+  ]
+
   reset-ticks
 end
 
 to go
   clear-patches
 
-  ask turtles [colora-distanza]
+  ;;aggiorno il valore di visione dei distanziatori
+  ask distanziatori [set visione vision * 2 ]
 
-  ;;ask patches [if ]
-  ask turtles [ flock ]
-  ;; the following line is used to make the turtles
+  ;; coloro la visione dei distanziatori
+  ask distanziatori [
+    ask patches in-cone visione 60 [set pcolor blue]
+  ]
+
+  ;; vedo le persone
+  ask distanziatori [ vedi-persone ]
+
+
+
+
+  ask persone [colora-distanza]
+  ask persone [ flock ]
+
+   ask distanziatori [separa-persone-troppo-vicine]
+  ;; the following line is used to make the persone
   ;; animate more smoothly.
-  ask turtles [ rt random-float 360 fd 0.5 ] display
+  ask persone [ rt random-float 360 fd 0.5 ] display
+  ask distanziatori [ rt random-float 360 fd 1 ] display
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
-  ;;   ask turtles [ fd 1 ]
+  ;;   ask persone [ fd 1 ]
+
   tick
 end
 
+to vedi-persone
+   set persone-viste other persone in-cone visione 60
+end
+
+to separa-persone-troppo-vicine
+if any? persone-viste
+  [
+    ask persone in-cone visione 60
+    [
+      find-flockmates
+      if any? flockmates
+      [find-nearest-neighbor
+      if distance nearest-neighbor < minimum-separation
+        [ separate ] ]
+    ]
+  ]
+end
 
 to colora-distanza
+
 set giro 360
 repeat giro [
-    ask patch-right-and-ahead giro minimum-separation [ set pcolor gray ]
+    ask patch-right-and-ahead giro minimum-separation [ set pcolor gray]
     set giro giro - 1
   ]
+
 end
 
 
 
 
 to flock  ;; turtle procedure
-
-  trova-vicini-raggio
-  if any? vicini-raggio
-    [trova-piu-vicino]
+  trova-distanziatori
 
   find-flockmates
   if any? flockmates
@@ -67,21 +112,18 @@ to flock  ;; turtle procedure
 end
 
 to find-flockmates  ;; turtle procedure
-  set flockmates other turtles in-cone vision 60
+  set flockmates other persone in-cone vision 60
 end
 
 to find-nearest-neighbor ;; turtle procedure
   set nearest-neighbor min-one-of flockmates [distance myself]
 end
 
-to trova-vicini-raggio  ;; turtle procedure
-  set vicini-raggio other turtles in-radius vision
+to trova-distanziatori
+  set distanziatori-visti count distanziatori in-cone vision 60
 end
 
 
-to trova-piu-vicino ;; turtle procedure
-  set vicino min-one-of vicini-raggio [distance myself]
-end
 
 ;;; SEPARATE
 
@@ -145,8 +187,8 @@ end
 
 
 to-report %distanza
-  ifelse any? turtles
-    [report (count turtles with [ (distance vicino) < minimum-separation] ) ]
+  ifelse any? persone
+    [report count persone with [count other persone in-radius minimum-separation > 0 ] ]
     [report 0]
 end
 
@@ -255,7 +297,7 @@ max-cohere-turn
 max-cohere-turn
 0.0
 20.0
-0.0
+20.0
 0.25
 1
 degrees
@@ -270,7 +312,7 @@ max-separate-turn
 max-separate-turn
 0.0
 20.0
-0.0
+20.0
 0.25
 1
 degrees
@@ -285,7 +327,7 @@ vision
 vision
 0.0
 10.0
-10.0
+8.0
 0.5
 1
 patches
