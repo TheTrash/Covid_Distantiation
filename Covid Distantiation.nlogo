@@ -1,30 +1,39 @@
-turtles-own [
+breed [ distanziatori distanziatore ]
+breed [ persone persona ]
+
+persone-own [
   flockmates         ;; agentset of nearby turtles
   nearest-neighbor   ;; closest one of our flockmates
 ]
 
 to setup
-  set-default-shape turtles "person"
+  set-default-shape persone "person"
   clear-all
-  create-turtles population
+  create-persone population
     [ set color yellow - 2 + random 7  ;; random shades look nice
       set size 1.5  ;; easier to see
       setxy random-xcor random-ycor
       set flockmates no-turtles ]
+  set-default-shape distanziatori "square"
+  create-distanziatori 4
+  [ set color blue
+    set size 2
+    setxy random-xcor random-ycor
+  ]
   reset-ticks
 end
 
 
 to go
-  ask turtles [ flock ]
+  ask persone [ flock ]
   ;; the following line is used to make the turtles
   ;; animate more smoothly.
-  ask turtles [ rt random-float 360 fd 0.5 ] display
+  ask persone [ rt random-float 360 fd 0.5 ] display
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
   ;;   ask turtles [ fd 1 ]
   ask patches [ set pcolor black ]
-  ask turtles
+  ask persone
   [ ask patches in-radius minimum-separation
       [ set pcolor red ]
   ]
@@ -42,7 +51,7 @@ to flock  ;; turtle procedure
 end
 
 to find-flockmates  ;; turtle procedure
-  set flockmates other turtles in-cone vision 60
+  set flockmates other persone in-cone vision 60
 end
 
 to find-nearest-neighbor ;; turtle procedure
@@ -183,7 +192,7 @@ population
 population
 1.0
 1000.0
-107.0
+35.0
 1.0
 1
 NIL
@@ -198,7 +207,7 @@ max-align-turn
 max-align-turn
 0.0
 20.0
-20.0
+0.0
 0.25
 1
 degrees
@@ -213,7 +222,7 @@ max-cohere-turn
 max-cohere-turn
 0.0
 20.0
-20.0
+0.0
 0.25
 1
 degrees
@@ -228,7 +237,7 @@ max-separate-turn
 max-separate-turn
 0.0
 20.0
-20.0
+0.0
 0.25
 1
 degrees
@@ -270,7 +279,7 @@ MONITOR
 1254
 158
 Persone vicine
-count turtles with [ count other turtles in-radius minimum-separation > 0 ]
+count persone with [ count other persone in-radius minimum-separation > 0 ]
 17
 1
 11
@@ -291,7 +300,7 @@ true
 false
 "" ""
 PENS
-"default" 1.0 0 -16777216 true "" "plot count turtles with [color = red]"
+"default" 1.0 0 -16777216 true "" "plot count persone"
 
 @#$#@#$#@
 ## WHAT IS IT?
