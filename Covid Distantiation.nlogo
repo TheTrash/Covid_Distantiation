@@ -1,53 +1,109 @@
-breed [ distanziatori distanziatore ]
-breed [ persone persona ]
+breed [distanziatori distanziatore]
+breed [persone persona]
+
 
 persone-own [
-  flockmates         ;; agentset of nearby turtles
+  flockmates         ;; agentset of nearby persone
   nearest-neighbor   ;; closest one of our flockmates
+  distanziatori-visti
 ]
 
+
+distanziatori-own [
+  persone-viste
+  visione
+]
+
+globals [
+  giro
+]
+
+
 to setup
-  set-default-shape persone "person"
   clear-all
   create-persone population
     [ set color yellow - 2 + random 7  ;; random shades look nice
       set size 1.5  ;; easier to see
       setxy random-xcor random-ycor
+      set shape "person"
       set flockmates no-turtles ]
-  set-default-shape distanziatori "square"
-  create-distanziatori 4
-  [ set color blue
-    set size 2
-    setxy random-xcor random-ycor
+  create-distanziatori 5
+  [
+    set color blue  ;; random shades look nice
+      set size 2  ;; easier to see
+      setxy random-xcor random-ycor
   ]
+
   reset-ticks
 end
 
-
 to go
+  clear-patches
+
+  ;;aggiorno il valore di visione dei distanziatori
+  ask distanziatori [set visione vision * 2 ]
+
+  ;; coloro la visione dei distanziatori
+  ask distanziatori [
+    ask patches in-cone visione 60 [set pcolor blue]
+  ]
+
+  ;; vedo le persone
+  ask distanziatori [ vedi-persone ]
+
+  ask persone [colora-distanza]
   ask persone [ flock ]
-  ;; the following line is used to make the turtles
+
+  ask distanziatori [separa-persone-troppo-vicine]
+  ;; the following line is used to make the persone
   ;; animate more smoothly.
   ask persone [ rt random-float 360 fd 0.5 ] display
+  ask distanziatori [ rt random-float 360 fd 1 ] display
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
-  ;;   ask turtles [ fd 1 ]
-  ask patches [ set pcolor black ]
-  ask persone
-  [ ask patches in-radius minimum-separation
-      [ set pcolor red ]
-  ]
+  ;;   ask persone [ fd 1 ]
+
   tick
 end
 
+to vedi-persone
+   set persone-viste other persone in-cone visione 60
+end
+
+to separa-persone-troppo-vicine
+if any? persone-viste
+  [
+    ask persone in-cone visione 60
+    [
+      find-flockmates
+      if any? flockmates
+      [find-nearest-neighbor
+      if distance nearest-neighbor < minimum-separation
+        [ separate ]
+      ]
+    ]
+  ]
+
+end
+
+to colora-distanza
+set giro 360
+repeat giro [
+    ask patch-right-and-ahead giro minimum-separation [ set pcolor gray]
+    set giro giro - 1
+  ]
+end
+
+
 to flock  ;; turtle procedure
+  trova-distanziatori
+
   find-flockmates
   if any? flockmates
     [ find-nearest-neighbor
       ifelse distance nearest-neighbor < minimum-separation
         [ separate ]
-        [ cohere ]
-  ]
+     ]
 end
 
 to find-flockmates  ;; turtle procedure
@@ -57,6 +113,11 @@ end
 to find-nearest-neighbor ;; turtle procedure
   set nearest-neighbor min-one-of flockmates [distance myself]
 end
+
+to trova-distanziatori
+  set distanziatori-visti count distanziatori in-cone vision 60
+end
+
 
 ;;; SEPARATE
 
@@ -117,6 +178,17 @@ to turn-at-most [turn max-turn]  ;; turtle procedure
         [ lt max-turn ] ]
     [ rt turn ]
 end
+
+
+to-report %distanza
+  ifelse any? persone
+    ; Ho notato che effettivamente il calcolo delle persone in contatto avveniva solo se entrambe fossero dentro il cerchio
+    ; ma il mio ragionamento è stato: se siamo entrambi ad x metri di distanza siamo a 2x metri di distanza non ad x
+    ; quindi se i cerchi di sovrappongono stiamo infrangendo la distanza.
+    [report count persone with [ count other persone in-radius (minimum-separation * 2) > 0 ] ]
+    [report 0]
+end
+
 
 
 ; Copyright 1998 Uri Wilensky.
@@ -192,7 +264,7 @@ population
 population
 1.0
 1000.0
-35.0
+11.0
 1.0
 1
 NIL
@@ -252,7 +324,7 @@ vision
 vision
 0.0
 10.0
-2.0
+10.0
 0.5
 1
 patches
@@ -267,7 +339,7 @@ minimum-separation
 minimum-separation
 0.0
 5.0
-2.0
+5.0
 0.25
 1
 patches
@@ -279,7 +351,7 @@ MONITOR
 1254
 158
 Persone vicine
-count persone with [ count other persone in-radius minimum-separation > 0 ]
+%distanza
 17
 1
 11
