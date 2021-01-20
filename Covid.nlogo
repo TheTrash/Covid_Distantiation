@@ -30,7 +30,6 @@ to setup
       setxy random-xcor random-ycor
       set shape "person"
       set flockmates no-turtles
-      set fuorilegge false
   ]
   create-distanziatori 4
   [
@@ -131,13 +130,13 @@ to flock  ;; turtle procedure
   trova-distanziatori
 
   find-flockmates
-  if any? flockmates
+  ifelse any? flockmates
     [ find-nearest-neighbor
       ifelse distance nearest-neighbor < minimum-separation
         [ set fuorilegge true
           separate ]
-        [ set fuorilegge false
-        cohere ] ]
+        [ cohere ] ]
+  [ set fuorilegge false]
 end
 
 to find-flockmates  ;; turtle procedure
