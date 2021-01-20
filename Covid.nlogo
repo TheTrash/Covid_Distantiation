@@ -7,6 +7,8 @@ persone-own [
   nearest-neighbor   ;; closest one of our flockmates
   distanziatori-visti
   fuorilegge
+
+  persone-vicino
 ]
 
 
@@ -30,13 +32,14 @@ to setup
       setxy random-xcor random-ycor
       set shape "person"
       set flockmates no-turtles
+      set fuorilegge false
   ]
   create-distanziatori 4
   [
     set color blue  ;; random shades look nice
       set size 2  ;; easier to see
       setxy random-xcor random-ycor
-    set cammina true
+      set cammina true
   ]
 
   reset-ticks
@@ -58,6 +61,7 @@ to go
 
   ask persone [colora-distanza]
   ask persone [ flock ]
+  ask persone [ imposta-fuorilegge ]
 
   ask distanziatori [ vigila ]
   ask distanziatori [separa-persone-troppo-vicine]
@@ -73,19 +77,19 @@ to go
 end
 
 to vigila
-  set cammina true
+
   let vigile distanziatore who
 
-  if any? persone-viste
+  ifelse any? persone-viste
   [
     ask persone in-cone visione 60
     [
-      if fuorilegge
-      [
-        ask vigile [set cammina false]
-      ]
+      ifelse fuorilegge
+      [ask vigile [set cammina false]]
+      [ask vigile [set cammina true]]
     ]
   ]
+  [set cammina true]
 
   if cammina
   [ fd 1]
@@ -97,6 +101,8 @@ end
 to vedi-persone
    set persone-viste other persone in-cone visione 60
 end
+
+
 
 to separa-persone-troppo-vicine
 if any? persone-viste
@@ -113,6 +119,11 @@ if any? persone-viste
   ]
 end
 
+
+
+
+
+
 to colora-distanza
 
 set giro 360
@@ -124,19 +135,33 @@ repeat giro [
 end
 
 
+to imposta-fuorilegge
+  trova-persone-intorno
+  ifelse any? persone-vicino
+  [set fuorilegge true]
+  [set fuorilegge false]
+
+end
+
+to trova-persone-intorno
+  set persone-vicino other persone in-radius minimum-separation
+end
+
+
+
 
 
 to flock  ;; turtle procedure
   trova-distanziatori
 
   find-flockmates
-  ifelse any? flockmates
+  if any? flockmates
     [ find-nearest-neighbor
       ifelse distance nearest-neighbor < minimum-separation
-        [ set fuorilegge true
-          separate ]
+        [ separate ]
         [ cohere ] ]
-  [ set fuorilegge false]
+
+
 end
 
 to find-flockmates  ;; turtle procedure
