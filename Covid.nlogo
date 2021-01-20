@@ -18,7 +18,7 @@ distanziatori-own [
 
 globals [
   giro
-
+  id
 ]
 
 
@@ -74,13 +74,17 @@ to go
 end
 
 to vigila
+  set cammina true
+  let vigile distanziatore who
 
   if any? persone-viste
   [
     ask persone in-cone visione 60
     [
       if fuorilegge
-      [set cammina false]
+      [
+        ask vigile [set cammina false]
+      ]
     ]
   ]
 
@@ -132,7 +136,8 @@ to flock  ;; turtle procedure
       ifelse distance nearest-neighbor < minimum-separation
         [ set fuorilegge true
           separate ]
-        [ cohere ] ]
+        [ set fuorilegge false
+        cohere ] ]
 end
 
 to find-flockmates  ;; turtle procedure
