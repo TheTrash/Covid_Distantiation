@@ -6,16 +6,19 @@ persone-own [
   flockmates         ;; agentset of nearby persone
   nearest-neighbor   ;; closest one of our flockmates
   distanziatori-visti
+  fuorilegge
 ]
 
 
 distanziatori-own [
   persone-viste
   visione
+  cammina
 ]
 
 globals [
   giro
+
 ]
 
 
@@ -26,12 +29,15 @@ to setup
       set size 1.5  ;; easier to see
       setxy random-xcor random-ycor
       set shape "person"
-      set flockmates no-turtles ]
+      set flockmates no-turtles
+      set fuorilegge false
+  ]
   create-distanziatori 4
   [
     set color blue  ;; random shades look nice
       set size 2  ;; easier to see
       setxy random-xcor random-ycor
+    set cammina true
   ]
 
   reset-ticks
@@ -51,23 +57,39 @@ to go
   ;; vedo le persone
   ask distanziatori [ vedi-persone ]
 
-
-
-
   ask persone [colora-distanza]
   ask persone [ flock ]
 
-   ask distanziatori [separa-persone-troppo-vicine]
+  ask distanziatori [ vigila ]
+  ask distanziatori [separa-persone-troppo-vicine]
   ;; the following line is used to make the persone
   ;; animate more smoothly.
   ask persone [ rt random-float 360 fd 0.5 ] display
-  ask distanziatori [ rt random-float 360 fd 1 ] display
+
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
   ;;   ask persone [ fd 1 ]
 
   tick
 end
+
+to vigila
+
+  if any? persone-viste
+  [
+    ask persone in-cone visione 60
+    [
+      if fuorilegge
+      [set cammina false]
+    ]
+  ]
+
+  if cammina
+  [ fd 1]
+
+end
+
+
 
 to vedi-persone
    set persone-viste other persone in-cone visione 60
@@ -82,7 +104,8 @@ if any? persone-viste
       if any? flockmates
       [find-nearest-neighbor
       if distance nearest-neighbor < minimum-separation
-        [ separate ] ]
+        [ separate ]
+      ]
     ]
   ]
 end
@@ -107,7 +130,8 @@ to flock  ;; turtle procedure
   if any? flockmates
     [ find-nearest-neighbor
       ifelse distance nearest-neighbor < minimum-separation
-        [ separate ]
+        [ set fuorilegge true
+          separate ]
         [ cohere ] ]
 end
 
