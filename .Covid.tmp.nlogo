@@ -36,7 +36,7 @@ to setup
   ]
   create-distanziatori 4
   [
-    set color blue  ;; random shades look nice
+    set color blue - 2 + wh  ;; random shades look nice
       set size 2  ;; easier to see
       setxy random-xcor random-ycor
       set cammina true
