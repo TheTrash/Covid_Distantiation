@@ -21,11 +21,13 @@ distanziatori-own [
 globals [
   giro
   id
+  offset
 ]
 
 
 to setup
   clear-all
+  set offset population
   create-persone population
     [ set color yellow - 2 + random 7  ;; random shades look nice
       set size 1.5  ;; easier to see
@@ -39,9 +41,10 @@ to setup
       set color blue  ;; random shades look nice
       set size 2  ;; easier to see
       set shape "square"
-      setxy 0 20
+      setxy 0 offset + who
       set heading 90
       set cammina true
+      set label-color red
   ]
 
   reset-ticks
@@ -106,8 +109,8 @@ to vigila
     ask persone in-cone visione 60
     [
       ifelse fuorilegge
-      [ ask vigile [set cammina false]]
-      [ ask vigile [set cammina true] ]
+      [ ask vigile [set cammina false set label "!"]]
+      [ ask vigile [set cammina true set label ""] ]
     ]
   ]
   [set cammina true]
@@ -339,8 +342,8 @@ SLIDER
 population
 population
 1.0
-1000.0
-15.0
+50
+50.0
 1.0
 1
 NIL
