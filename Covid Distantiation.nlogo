@@ -6,16 +6,21 @@ persone-own [
   flockmates         ;; agentset of nearby persone
   nearest-neighbor   ;; closest one of our flockmates
   distanziatori-visti
+  fuorilegge
+
+  persone-vicino
 ]
 
 
 distanziatori-own [
   persone-viste
   visione
+  cammina
 ]
 
 globals [
   giro
+  id
 ]
 
 
@@ -26,12 +31,17 @@ to setup
       set size 1.5  ;; easier to see
       setxy random-xcor random-ycor
       set shape "person"
-      set flockmates no-turtles ]
-  create-distanziatori 5
+      set flockmates no-turtles
+      set fuorilegge false
+  ]
+  create-distanziatori 1
   [
-    set color blue  ;; random shades look nice
+      set color blue  ;; random shades look nice
       set size 2  ;; easier to see
-      setxy random-xcor random-ycor
+      set shape "square"
+      setxy 0 20
+      set heading 90
+      set cammina true
   ]
 
   reset-ticks
@@ -53,12 +63,34 @@ to go
 
   ask persone [colora-distanza]
   ask persone [ flock ]
+  ask persone [ imposta-fuorilegge ]
 
+  ask distanziatori [ vigila ]
   ask distanziatori [separa-persone-troppo-vicine]
   ;; the following line is used to make the persone
   ;; animate more smoothly.
   ask persone [ rt random-float 360 fd 0.5 ] display
-  ask distanziatori [ rt random-float 360 fd 1 ] display
+
+  ask distanziatori [
+    if cammina [
+      if ( xcor = 20 and heading = 90 ) [
+        rt 90
+      ]
+      if ( ycor = -20 and heading = 180 ) [
+        rt 90
+      ]
+      if ( xcor = -20 and heading = 270 ) [
+        rt 90
+      ]
+      if ( ycor = 20 and heading = 270 ) [
+        rt 90
+      ]
+      if ( ycor = 20 and heading = 0 ) [
+        rt 90
+      ]
+      fd 1
+    ]
+  ]
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
   ;;   ask persone [ fd 1 ]
@@ -66,9 +98,31 @@ to go
   tick
 end
 
+to vigila
+  let vigile distanziatore who
+
+  ifelse any? persone-viste
+  [
+    ask persone in-cone visione 60
+    [
+      ifelse fuorilegge
+      [ ask vigile [set cammina false]]
+      [ ask vigile [set cammina true] ]
+    ]
+  ]
+  [set cammina true]
+
+
+
+end
+
+
+
 to vedi-persone
    set persone-viste other persone in-cone visione 60
 end
+
+
 
 to separa-persone-troppo-vicine
 if any? persone-viste
@@ -83,16 +137,38 @@ if any? persone-viste
       ]
     ]
   ]
-
 end
 
+
+
+
+
+
 to colora-distanza
+
 set giro 360
 repeat giro [
     ask patch-right-and-ahead giro minimum-separation [ set pcolor gray]
     set giro giro - 1
   ]
+
 end
+
+
+to imposta-fuorilegge
+  trova-persone-intorno
+  ifelse any? persone-vicino
+  [set fuorilegge true]
+  [set fuorilegge false]
+
+end
+
+to trova-persone-intorno
+  set persone-vicino other persone in-radius minimum-separation
+end
+
+
+
 
 
 to flock  ;; turtle procedure
@@ -103,7 +179,9 @@ to flock  ;; turtle procedure
     [ find-nearest-neighbor
       ifelse distance nearest-neighbor < minimum-separation
         [ separate ]
-     ]
+        [ cohere ] ]
+
+
 end
 
 to find-flockmates  ;; turtle procedure
@@ -117,6 +195,7 @@ end
 to trova-distanziatori
   set distanziatori-visti count distanziatori in-cone vision 60
 end
+
 
 
 ;;; SEPARATE
@@ -182,10 +261,7 @@ end
 
 to-report %distanza
   ifelse any? persone
-    ; Ho notato che effettivamente il calcolo delle persone in contatto avveniva solo se entrambe fossero dentro il cerchio
-    ; ma il mio ragionamento è stato: se siamo entrambi ad x metri di distanza siamo a 2x metri di distanza non ad x
-    ; quindi se i cerchi di sovrappongono stiamo infrangendo la distanza.
-    [report count persone with [ count other persone in-radius (minimum-separation * 2) > 0 ] ]
+    [report count persone with [count other persone in-radius minimum-separation > 0 ] ]
     [report 0]
 end
 
@@ -195,13 +271,13 @@ end
 ; See Info tab for full copyright and license.
 @#$#@#$#@
 GRAPHICS-WINDOW
-250
-10
-968
-729
+372
+22
+986
+637
 -1
 -1
-10.0
+6.0
 1
 10
 1
@@ -211,10 +287,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--35
-35
--35
-35
+-50
+50
+-50
+50
 1
 1
 1
@@ -264,7 +340,7 @@ population
 population
 1.0
 1000.0
-11.0
+15.0
 1.0
 1
 NIL
@@ -294,7 +370,7 @@ max-cohere-turn
 max-cohere-turn
 0.0
 20.0
-0.0
+20.0
 0.25
 1
 degrees
@@ -309,7 +385,7 @@ max-separate-turn
 max-separate-turn
 0.0
 20.0
-0.0
+20.0
 0.25
 1
 degrees
@@ -324,7 +400,7 @@ vision
 vision
 0.0
 10.0
-10.0
+8.0
 0.5
 1
 patches
@@ -346,33 +422,15 @@ patches
 HORIZONTAL
 
 MONITOR
-1144
-113
-1254
-158
-Persone vicine
+80
+340
+152
+385
 %distanza
-17
+%distanza
+2
 1
 11
-
-PLOT
-999
-273
-1199
-423
-plot 1
-NIL
-NIL
-0.0
-10.0
-0.0
-10.0
-true
-false
-"" ""
-PENS
-"default" 1.0 0 -16777216 true "" "plot count persone"
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -761,7 +819,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.1.1
+NetLogo 6.2.0
 @#$#@#$#@
 set population 200
 setup
