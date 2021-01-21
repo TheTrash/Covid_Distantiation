@@ -16,8 +16,6 @@ distanziatori-own [
   persone-viste
   visione
   cammina
-
-  mov
 ]
 
 globals [
@@ -29,6 +27,7 @@ globals [
 
 to setup
   clear-all
+   mov movimenti
   set offset population
   create-persone population
     [ set color yellow - 2 + random 7  ;; random shades look nice
@@ -47,7 +46,6 @@ to setup
       set heading 90
       set cammina true
       set label-color red
-      set mov movimenti
   ]
 
   reset-ticks
