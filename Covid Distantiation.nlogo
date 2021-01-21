@@ -36,12 +36,12 @@ to setup
       set flockmates no-turtles
       set fuorilegge false
   ]
-  create-distanziatori 1
+  create-distanziatori ( ceiling ( population / 10 ) )
   [
       set color blue  ;; random shades look nice
       set size 2  ;; easier to see
       set shape "square"
-      setxy 0 offset + who
+      setxy (offset - who)* 10 (offset - who)* 10
       set heading 90
       set cammina true
       set label-color red
@@ -49,6 +49,37 @@ to setup
 
   reset-ticks
 end
+
+to muovi
+  (ifelse
+    movimenti = "randomized" [
+      rt random-float 360 fd 0.5
+    ]
+    movimenti = "squared" [
+    if cammina [
+      if ( xcor = (20 - (offset - who)* 5)  and heading = 90 ) [
+        rt 90
+      ]
+      if ( ycor = (-20 + (offset - who)* 5)  and heading = 180 ) [
+        rt 90
+      ]
+      if ( xcor = ( -20 + (offset - who)* 5)  and heading = 270 ) [
+        rt 90
+      ]
+      if ( ycor = ( 20 - (offset - who)* 5) and heading = 270 ) [
+        rt 90
+      ]
+      if ( ycor = ( 20 - (offset - who)* 5 ) and heading = 0 ) [
+        rt 90
+      ]
+      fd 1
+    ]
+    ]
+    [
+    fd 1
+  ])
+end
+
 
 to go
   clear-patches
@@ -74,26 +105,7 @@ to go
   ;; animate more smoothly.
   ask persone [ rt random-float 360 fd 0.5 ] display
 
-  ask distanziatori [
-    if cammina [
-      if ( xcor = 20 and heading = 90 ) [
-        rt 90
-      ]
-      if ( ycor = -20 and heading = 180 ) [
-        rt 90
-      ]
-      if ( xcor = -20 and heading = 270 ) [
-        rt 90
-      ]
-      if ( ycor = 20 and heading = 270 ) [
-        rt 90
-      ]
-      if ( ycor = 20 and heading = 0 ) [
-        rt 90
-      ]
-      fd 1
-    ]
-  ]
+  ask distanziatori [ muovi ]
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
   ;;   ask persone [ fd 1 ]
@@ -343,7 +355,7 @@ population
 population
 1.0
 50
-50.0
+31.0
 1.0
 1
 NIL
@@ -403,7 +415,7 @@ vision
 vision
 0.0
 10.0
-8.0
+10.0
 0.5
 1
 patches
@@ -434,6 +446,16 @@ MONITOR
 2
 1
 11
+
+CHOOSER
+1123
+151
+1261
+196
+movimenti
+movimenti
+"randomized" "squared"
+0
 
 @#$#@#$#@
 ## WHAT IS IT?
