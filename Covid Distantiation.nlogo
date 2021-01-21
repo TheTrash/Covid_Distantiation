@@ -27,6 +27,7 @@ globals [
 
 to setup
   clear-all
+  let mov movimenti
   set offset population
   create-persone population
     [ set color yellow - 2 + random 7  ;; random shades look nice
@@ -52,10 +53,10 @@ end
 
 to muovi
   (ifelse
-    movimenti = "randomized" [
+    mov = "randomized" [
       rt random-float 360 fd 0.5
     ]
-    movimenti = "squared" [
+    mov = "squared" [
     if cammina [
       if ( xcor = (20 - (offset - who)* 5)  and heading = 90 ) [
         rt 90
@@ -127,11 +128,7 @@ to vigila
   ]
   [set cammina true]
 
-
-
 end
-
-
 
 to vedi-persone
    set persone-viste other persone in-cone visione 60
