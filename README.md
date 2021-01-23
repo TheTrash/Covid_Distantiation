@@ -43,3 +43,19 @@ La relazione deve contenere:
 - discussione della complessità/efficienza stimata
 
 - dati di esempio ed eventuali test comparativi sulle prestazioni
+
+
+
+## Possibili implementazioni / Fatti su cui pensare
+Ragionare sul random degree nell'attuale funzione di movimento
+Ha senso tenerlo? Senza sembra essere miglire.
+
+Decidere se conviene fare un esecuzione per volta e permettere il cambio dei parametri solo prima dell'esecuzione.
+
+Impostare  i movimenti  in funzioni separate
+
+Modificare e semplificare i movimenti
+
+Si potrebbe fare che invece di cohere gli agenti "persone" potrebbero incontrarsi, fermarsi per simulare un assembramento e se visti dagli agente "distanziatore" si allontano in direzioni casuali 
+turn 270 fd 1
+si girano di gradi random e vanno avanti.

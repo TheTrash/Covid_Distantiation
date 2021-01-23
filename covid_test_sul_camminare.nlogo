@@ -7,8 +7,8 @@ persone-own [
   nearest-neighbor   ;; closest one of our flockmates
   distanziatori-visti
   fuorilegge
-
   persone-vicino
+
   cammina
 ]
 
@@ -34,7 +34,7 @@ to setup
       set shape "person"
       set flockmates no-turtles
       set fuorilegge false
-    set cammina true
+      set cammina true
   ]
   create-distanziatori 4
   [
@@ -51,7 +51,7 @@ to go
   clear-patches
 
   ;;aggiorno il valore di visione dei distanziatori
-  ask distanziatori [set visione vision * 2 ]
+  ask distanziatori [ set visione vision * 2 ]
 
   ;; coloro la visione dei distanziatori
   ask distanziatori [
@@ -71,10 +71,10 @@ to go
 
 
   ask distanziatori [ vigila ]
-  ask distanziatori [separa-persone-troppo-vicine]
+  ask distanziatori [ separa-persone-troppo-vicine ]
   ;; the following line is used to make the persone
   ;; animate more smoothly.
-  ask persone [ if cammina [ fd 0.5 ] ] display
+  ask persone [ if cammina [fd 0.5] ] display
 
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
@@ -196,7 +196,7 @@ to flock  ;; turtle procedure
     [ find-nearest-neighbor
       ifelse distance nearest-neighbor < minimum-separation
         [ separate ]
-        [ set cammina false ] ]
+        [ cohere ] ]
 
 
 end
