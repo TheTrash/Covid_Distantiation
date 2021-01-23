@@ -9,6 +9,7 @@ persone-own [
   fuorilegge
 
   persone-vicino
+  cammina
 ]
 
 
@@ -33,6 +34,7 @@ to setup
       set shape "person"
       set flockmates no-turtles
       set fuorilegge false
+    set cammina true
   ]
   create-distanziatori 4
   [
@@ -72,7 +74,7 @@ to go
   ask distanziatori [separa-persone-troppo-vicine]
   ;; the following line is used to make the persone
   ;; animate more smoothly.
-  ask persone [ fd 0.5 ] display
+  ask persone [ if cammina [ fd 0.5 ] ] display
 
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
@@ -194,7 +196,7 @@ to flock  ;; turtle procedure
     [ find-nearest-neighbor
       ifelse distance nearest-neighbor < minimum-separation
         [ separate ]
-        [ cohere ] ]
+        [ set cammina false ] ]
 
 
 end

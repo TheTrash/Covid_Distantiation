@@ -9,6 +9,7 @@ persone-own [
   fuorilegge
 
   persone-vicino
+  cammina
 ]
 
 
@@ -37,6 +38,7 @@ to setup
       set shape "person"
       set flockmates no-turtles
       set fuorilegge false
+      set cammina true
   ]
   create-distanziatori ( ceiling ( population / 10 ) )
   [
@@ -48,6 +50,7 @@ to setup
       set cammina true
       set label-color red
       set mov movimenti
+      set visione vision * 2
   ]
 
   reset-ticks
@@ -88,39 +91,37 @@ to go
   clear-patches
 
   ;;aggiorno il valore di visione dei distanziatori
-  ask distanziatori [set visione vision * 2 ]
+
 
   ;; coloro la visione dei distanziatori
-  ask distanziatori [
-    ask patches in-cone visione 60 [set pcolor blue]
-  ]
+  ask distanziatori [ ask patches in-cone visione 60 [set pcolor blue] ]
 
-  ;; vedo le persone
-  ask distanziatori [ vedi-persone ]
 
-  ask persone [colora-distanza]
+  ask persone [ colora-distanza ]
   ask persone [ flock ]
-  ask persone [ imposta-fuorilegge ]
 
-  ask distanziatori [ vigila ]
-  ask distanziatori [separa-persone-troppo-vicine]
-  ;; the following line is used to make the persone
-  ;; animate more smoothly.
-  ask persone [ rt random-float 360 fd 0.5 ] display
+  ask persone [ imposta-fuorilegge ]
+  ask persone [ if not fuorilegge [ fd 0.5 ] ]
+
+  ask distanziatori [
+    ;; set the persone viste list
+    set persone-viste other persone in-cone visione 60
+    ;; appli the vigila rules
+    vigila
+  ]
+  ask distanziatori [ separa-persone-troppo-vicine ]
+
+
 
   ask distanziatori [ muovi ]
-  ;; for greater efficiency, at the expense of smooth
-  ;; animation, substitute the following line instead:
-  ;;   ask persone [ fd 1 ]
 
+  display
   tick
 end
 
 to vigila
   let vigile distanziatore who
-
-  ifelse any? persone-viste
-  [
+  if any? persone-viste [
     ask persone in-cone visione 60
     [
       ifelse fuorilegge
@@ -128,13 +129,8 @@ to vigila
       [ ask vigile [set cammina true set label ""] ]
     ]
   ]
-  [set cammina true]
-
 end
 
-to vedi-persone
-   set persone-viste other persone in-cone visione 60
-end
 
 
 
@@ -143,19 +139,13 @@ if any? persone-viste
   [
     ask persone in-cone visione 60
     [
-      find-flockmates
       if any? flockmates
-      [find-nearest-neighbor
-      if distance nearest-neighbor < minimum-separation
+      [ if distance nearest-neighbor < minimum-separation
         [ separate ]
       ]
     ]
   ]
 end
-
-
-
-
 
 
 to colora-distanza
@@ -172,9 +162,8 @@ end
 to imposta-fuorilegge
   trova-persone-intorno
   ifelse any? persone-vicino
-  [set fuorilegge true]
-  [set fuorilegge false]
-
+  [set fuorilegge true ]
+  [set fuorilegge false ]
 end
 
 to trova-persone-intorno
@@ -192,8 +181,9 @@ to flock  ;; turtle procedure
   if any? flockmates
     [ find-nearest-neighbor
       ifelse distance nearest-neighbor < minimum-separation
-        [ separate ]
-        [ cohere ] ]
+        [  ]
+        [ cohere ]
+  ]
 
 
 end
@@ -215,14 +205,10 @@ end
 ;;; SEPARATE
 
 to separate  ;; turtle procedure
-  turn-away ([heading] of nearest-neighbor) max-separate-turn
+  turn-away ([heading] of nearest-neighbor) 90
+  fd 1
 end
 
-;;; ALIGN
-
-to align  ;; turtle procedure
-  turn-towards average-flockmate-heading max-align-turn
-end
 
 to-report average-flockmate-heading  ;; turtle procedure
   ;; We can't just average the heading variables here.
@@ -454,7 +440,7 @@ CHOOSER
 movimenti
 movimenti
 "randomized" "squared"
-0
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
