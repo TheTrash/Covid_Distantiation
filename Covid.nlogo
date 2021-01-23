@@ -7,11 +7,16 @@ persone-own [
   nearest-neighbor   ;; closest one of our flockmates
   distanziatori-visti
   fuorilegge
-
   persone-vicino
   cammina
-]
 
+  vista
+  convergenza
+  distanza-minima
+
+  distanza-minima-1  ;;usata per memorizzare la distanza minima quando viene sostituita
+  mantieni-per ;;indica i tick che devono passare da quando è stata vista la guardia
+]
 
 distanziatori-own [
   persone-viste
@@ -20,8 +25,16 @@ distanziatori-own [
 ]
 
 globals [
+  ;;usata per colorare il giro di distanza delle persoen
   giro
+
+  ;;usato per memorizzare temporaneamente l'id dei distanziatori
   id
+
+  ;;si usano nel caso in cui si vogliono aggiornare i parametri
+  vista-globale
+  convergenza-globale
+  distanza-minima-media-globale
 ]
 
 
@@ -34,7 +47,14 @@ to setup
       set shape "person"
       set flockmates no-turtles
       set fuorilegge false
-    set cammina true
+
+      set mantieni-per 0
+      assegna-vista
+      assegna-convergenza
+      assegna-distanza-minima
+
+      set cammina true
+
   ]
   create-distanziatori 4
   [
@@ -42,7 +62,13 @@ to setup
       set size 2  ;; easier to see
       setxy random-xcor random-ycor
       set cammina true
+      set visione vision * 2
   ]
+
+
+  set vista-globale vision
+  set convergenza-globale max-cohere-turn
+  set distanza-minima-media-globale distanza-minima-media
 
   reset-ticks
 end
@@ -50,8 +76,12 @@ end
 to go
   clear-patches
 
+  ask persone [controlla-tick]
+  ask persone [ vedi-distanziatori ]
+  ;;ask persone [controlla-sliders]
+
   ;;aggiorno il valore di visione dei distanziatori
-  ask distanziatori [set visione vision * 2 ]
+  ;;ask distanziatori [set visione vision * 2 ]
 
   ;; coloro la visione dei distanziatori
   ask distanziatori [
@@ -67,14 +97,20 @@ to go
   ask persone [ flock ]
   ask persone [ imposta-fuorilegge ]
 
-  ask persone [ vedi-distanziatori ]
+
 
 
   ask distanziatori [ vigila ]
   ask distanziatori [separa-persone-troppo-vicine]
   ;; the following line is used to make the persone
   ;; animate more smoothly.
-  ask persone [ if cammina [ fd 0.5 ] ] display
+
+  ask persone [
+    ;rt random-float 360
+    fd 0.5 ] display
+
+  ask persone [ if cammina [ fd 1 ] ] display
+
 
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
@@ -83,24 +119,67 @@ to go
   tick
 end
 
+to assegna-vista
+  set vista random-near vision
+end
+
+to assegna-convergenza
+  set convergenza random-near max-cohere-turn
+end
+
+to assegna-distanza-minima
+  set distanza-minima random-near distanza-minima-media
+  set distanza-minima-1 distanza-minima
+end
+
+to-report random-near [center]  ;; turtle procedure
+  let result 0
+  repeat 40
+    [ set result (result + random-float center) ]
+  report result / 20
+end
+
+to controlla-sliders
+  if (vista-globale != vision)
+  [assegna-vista
+   set vista-globale vision ]
+
+  if (convergenza-globale != max-cohere-turn)
+  [assegna-convergenza
+   set convergenza-globale max-cohere-turn ]
+
+  if (distanza-minima-media-globale != distanza-minima-media)
+  [assegna-distanza-minima
+  set distanza-minima-media-globale distanza-minima-media ]
+end
+
+
+
 to vedi-distanziatori
 
   trova-distanziatori
   if any? distanziatori-visti
   [
-   find-flockmates
-   if any? flockmates
-    [ find-nearest-neighbor
-      if distance nearest-neighbor < minimum-separation
-        [ separate ]
+   if distanza-minima < minimum-separation
+    [set distanza-minima minimum-separation
+     set mantieni-per 100
     ]
+
   ]
 end
 
 to trova-distanziatori
-  set distanziatori-visti other distanziatori in-cone vision 60
+  set distanziatori-visti other distanziatori in-cone vista 60
 end
 
+
+to controlla-tick
+  if mantieni-per > 0
+  [set mantieni-per mantieni-per - 1]
+
+  if mantieni-per = 0
+  [set distanza-minima distanza-minima-1]
+end
 
 
 
@@ -162,14 +241,14 @@ to colora-distanza
 
 set giro 360
 repeat giro [
-    ask patch-right-and-ahead giro minimum-separation [ set pcolor gray]
+    ask patch-right-and-ahead giro distanza-minima [ set pcolor gray]
     set giro giro - 1
   ]
 
 end
 
 to colora-vista
-  ask patches in-cone vision 60 [set pcolor white]
+  ask patches in-cone vista 60 [set pcolor white]
 end
 
 
@@ -194,7 +273,7 @@ to flock  ;; turtle procedure
   find-flockmates
   if any? flockmates
     [ find-nearest-neighbor
-      ifelse distance nearest-neighbor < minimum-separation
+      ifelse distance nearest-neighbor < distanza-minima
         [ separate ]
         [ set cammina false ] ]
 
@@ -202,7 +281,7 @@ to flock  ;; turtle procedure
 end
 
 to find-flockmates  ;; turtle procedure
-  set flockmates other persone in-cone vision 60
+  set flockmates other persone in-cone vista 60
 end
 
 to find-nearest-neighbor ;; turtle procedure
@@ -239,7 +318,7 @@ end
 ;;; COHERE
 
 to cohere  ;; turtle procedure
-  turn-towards average-heading-towards-flockmates max-cohere-turn
+  turn-towards average-heading-towards-flockmates convergenza
 end
 
 to-report average-heading-towards-flockmates  ;; turtle procedure
@@ -415,7 +494,7 @@ vision
 vision
 0.0
 10.0
-8.0
+7.5
 0.5
 1
 patches
@@ -446,6 +525,21 @@ MONITOR
 2
 1
 11
+
+SLIDER
+34
+394
+208
+427
+distanza-minima-media
+distanza-minima-media
+1
+10
+3.0
+1
+1
+NIL
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -834,7 +928,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.2.0
+NetLogo 6.1.1
 @#$#@#$#@
 set population 200
 setup
