@@ -44,6 +44,7 @@ globals [
 
 to setup
   clear-all
+  set offset population
   create-persone population
     [ set color yellow - 2 + random 7  ;; random shades look nice
       set size 1.5  ;; easier to see
@@ -93,7 +94,7 @@ to go
   ask persone [ vedi-distanziatori ]
   ;;ask persone [controlla-sliders]
 
- ask persone [ if cammina [ fd 0.5] ]
+ ask persone [ if cammina [ fd 0.5] ] ;;non cammina solo quando il più vicino è fuori dalla sua distanza minima
 
 
 ;; azioni
@@ -104,12 +105,13 @@ to go
     vigila
   ]
 
-  ask distanziatori [separa-persone-troppo-vicine]
+  ;;ripete quello che fa la funzione sopra
+  ;;ask distanziatori [separa-persone-troppo-vicine]
 
   ;; the following line is used to make the persone
   ;; animate more smoothly.
 
- ask distanziatori [ if cammina [ muovi ] ]
+ ask distanziatori [ if cammina [ muovi ] ] ;;non cammina quando vede fuorilegge
 
   ;; for greater efficiency, at the expense of smooth
   ;; animation, substitute the following line instead:
@@ -246,7 +248,6 @@ to muovi
       rt random-float 360 fd 0.5
     ]
     mov = "squared" [
-    if cammina [
       if ( xcor = (20 - (offset - who)* 5)  and heading = 90 ) [
         rt 90
       ]
@@ -264,8 +265,7 @@ to muovi
       ]
       fd 0.5
     ]
-    ]
-     mov = "lined" [
+    mov = "lined" [
       fd 0.5
     ]
     [
@@ -280,12 +280,12 @@ to vigila
     ask persone in-cone visione 60
     [
       ifelse fuorilegge
-        [ 
+        [
           separate
           ask vigile [set cammina false set label "!"]
         ]
-        [ 
-          ask vigile [set cammina true set label "" ] 
+        [
+          ask vigile [set cammina true set label "" ]
         ]
     ]
   ]
@@ -476,7 +476,7 @@ population
 population
 1.0
 1000.0
-14.0
+35.0
 1.0
 1
 NIL
