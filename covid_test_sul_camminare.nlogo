@@ -7,8 +7,8 @@ persone-own [
   nearest-neighbor   ;; closest one of our flockmates
   distanziatori-visti
   fuorilegge
-  persone-vicino
 
+  persone-vicino
   cammina
 ]
 
@@ -17,16 +17,20 @@ distanziatori-own [
   persone-viste
   visione
   cammina
+
+  mov
 ]
 
 globals [
   giro
   id
+  offset
 ]
 
 
 to setup
   clear-all
+  set offset population
   create-persone population
     [ set color yellow - 2 + random 7  ;; random shades look nice
       set size 1.5  ;; easier to see
@@ -36,116 +40,98 @@ to setup
       set fuorilegge false
       set cammina true
   ]
-  create-distanziatori 4
+  create-distanziatori ( ceiling ( population / 10 ) )
   [
-    set color blue  ;; random shades look nice
+      set mov movimenti
+      set visione vision * 2
+      set color blue  ;; random shades look nice
       set size 2  ;; easier to see
-      setxy random-xcor random-ycor
+      set shape "square"
+      setxy  ((offset - who)* 10)   (offset - who)* 10
+      set heading 90
       set cammina true
-  ]
+      set label-color red
 
+  ]
   reset-ticks
 end
+
+to muovi
+  (ifelse
+    mov = "randomized" [
+      rt random-float 360 fd 0.5
+    ]
+    mov = "squared" [
+    if cammina [
+      if ( xcor = (20 - (offset - who)* 5)  and heading = 90 ) [
+        rt 90
+      ]
+      if ( ycor = (-20 + (offset - who)* 5)  and heading = 180 ) [
+        rt 90
+      ]
+      if ( xcor = ( -20 + (offset - who)* 5)  and heading = 270 ) [
+        rt 90
+      ]
+      if ( ycor = ( 20 - (offset - who)* 5) and heading = 270 ) [
+        rt 90
+      ]
+      if ( ycor = ( 20 - (offset - who)* 5 ) and heading = 0 ) [
+        rt 90
+      ]
+      fd 0.5
+    ]
+    ]
+     mov = "lined" [
+      fd 0.5
+    ]
+    [
+    fd 0.5
+  ])
+end
+
 
 to go
   clear-patches
 
   ;;aggiorno il valore di visione dei distanziatori
-  ask distanziatori [ set visione vision * 2 ]
+
 
   ;; coloro la visione dei distanziatori
-  ask distanziatori [
-    ask patches in-cone visione 60 [set pcolor blue]
-  ]
+  ask distanziatori [ ask patches in-cone visione 60 [set pcolor blue] ]
 
-  ;; vedo le persone
-  ask distanziatori [ vedi-persone ]
 
   ask persone [ colora-distanza ]
-  ask persone [ colora-vista ]
-
   ask persone [ flock ]
+
   ask persone [ imposta-fuorilegge ]
+  ask persone [ if not fuorilegge [ fd 0.5 ] ]
 
-  ask persone [ vedi-distanziatori ]
+  ask distanziatori [
+    ;; set the persone viste list
+    set persone-viste other persone in-cone visione 60
+    ;; appli the vigila rules
+    vigila
+  ]
 
+  ask distanziatori [ if cammina [ muovi ] ]
 
-  ask distanziatori [ vigila ]
-  ask distanziatori [ separa-persone-troppo-vicine ]
-  ;; the following line is used to make the persone
-  ;; animate more smoothly.
-  ask persone [ if cammina [fd 0.5] ] display
-
-  ;; for greater efficiency, at the expense of smooth
-  ;; animation, substitute the following line instead:
-  ;;   ask persone [ fd 1 ]
-
+  display
   tick
 end
 
-to vedi-distanziatori
-
-  trova-distanziatori
-  if any? distanziatori-visti
-  [
-   find-flockmates
-   if any? flockmates
-    [ find-nearest-neighbor
-      if distance nearest-neighbor < minimum-separation
-        [ set cammina false ]
-    ]
-  ]
-end
-
-to trova-distanziatori
-  set distanziatori-visti other distanziatori in-cone vision 60
-end
-
-
 to vigila
-
   let vigile distanziatore who
-
-  ifelse any? persone-viste
-  [
+  if any? persone-viste [
     ask persone in-cone visione 60
     [
       ifelse fuorilegge
-      [ask vigile [set cammina false]]
-      [ask vigile [set cammina true]]
-    ]
-  ]
-  [set cammina true]
-end
-
-
-
-to vedi-persone
-   set persone-viste other persone in-cone visione 60
-end
-
-
-
-to separa-persone-troppo-vicine
-if any? persone-viste
-  [
-    ask persone in-cone visione 60
-    [
-      find-flockmates
-      if any? flockmates
-      [find-nearest-neighbor
-      if distance nearest-neighbor < minimum-separation
-        [ separate ]
+      [ separate
+        ask vigile [set cammina false set label "!"]
       ]
+      [ ask vigile [set cammina true set label ""] ]
     ]
   ]
 end
-
-
-
-
-
-
 
 to colora-distanza
 
@@ -157,17 +143,12 @@ repeat giro [
 
 end
 
-to colora-vista
-  ask patches in-cone vision 60 [set pcolor white]
-end
-
 
 to imposta-fuorilegge
   trova-persone-intorno
   ifelse any? persone-vicino
-  [set fuorilegge true]
-  [set fuorilegge false]
-
+  [set fuorilegge true ]
+  [set fuorilegge false ]
 end
 
 to trova-persone-intorno
@@ -179,13 +160,14 @@ end
 
 
 to flock  ;; turtle procedure
+  trova-distanziatori
 
   find-flockmates
   if any? flockmates
     [ find-nearest-neighbor
-      ifelse distance nearest-neighbor < minimum-separation
-        [ separate ]
-        [ cohere ] ]
+      if distance nearest-neighbor > minimum-separation
+        [ cohere ]
+  ]
 
 
 end
@@ -198,21 +180,26 @@ to find-nearest-neighbor ;; turtle procedure
   set nearest-neighbor min-one-of flockmates [distance myself]
 end
 
-
+to trova-distanziatori
+  set distanziatori-visti count distanziatori in-cone vision 60
+end
 
 
 
 ;;; SEPARATE
 
 to separate  ;; turtle procedure
-  turn-away ([heading] of nearest-neighbor) max-separate-turn
+  ;; la procedura fa si che quando vengono viste dal distanziatore
+  ;; le persone si girino di 180 gradi ( puntano nella direzione opposta )
+  ;; e si allontanino
+  ;;turn-away ([heading] of nearest-neighbor) 90
+  rt random 360
+  ;; qui possiamo inserire un check che fa fare fd finché non sono a distanza minima
+  ;; come richiesto dalla consegna
+  ;; però non so come l'hai implementata te quella cosa quindi attenderò.
+  fd 1
 end
 
-;;; ALIGN
-
-to align  ;; turtle procedure
-  turn-towards average-flockmate-heading max-align-turn
-end
 
 to-report average-flockmate-heading  ;; turtle procedure
   ;; We can't just average the heading variables here.
@@ -275,13 +262,13 @@ end
 ; See Info tab for full copyright and license.
 @#$#@#$#@
 GRAPHICS-WINDOW
-250
-10
-755
-516
+372
+22
+721
+372
 -1
 -1
-7.0
+4.812
 1
 10
 1
@@ -343,8 +330,8 @@ SLIDER
 population
 population
 1.0
-1000.0
-15.0
+50
+1.0
 1.0
 1
 NIL
@@ -404,7 +391,7 @@ vision
 vision
 0.0
 10.0
-8.0
+10.0
 0.5
 1
 patches
@@ -435,6 +422,16 @@ MONITOR
 2
 1
 11
+
+CHOOSER
+973
+32
+1111
+77
+movimenti
+movimenti
+"randomized" "squared" "lined"
+1
 
 @#$#@#$#@
 ## WHAT IS IT?
