@@ -42,17 +42,17 @@ to setup
   ]
   create-distanziatori ( ceiling ( population / 10 ) )
   [
+      set mov movimenti
+      set visione vision * 2
       set color blue  ;; random shades look nice
       set size 2  ;; easier to see
       set shape "square"
-      setxy (offset - who)* 10 (offset - who)* 10
+      setxy  ((offset - who)* 10)   (offset - who)* 10
       set heading 90
       set cammina true
       set label-color red
-      set mov movimenti
-      set visione vision * 2
-  ]
 
+  ]
   reset-ticks
 end
 
@@ -78,11 +78,14 @@ to muovi
       if ( ycor = ( 20 - (offset - who)* 5 ) and heading = 0 ) [
         rt 90
       ]
-      fd 1
+      fd 0.5
     ]
+    ]
+     mov = "lined" [
+      fd 0.5
     ]
     [
-    fd 1
+    fd 0.5
   ])
 end
 
@@ -109,11 +112,8 @@ to go
     ;; appli the vigila rules
     vigila
   ]
-  ask distanziatori [ separa-persone-troppo-vicine ]
 
-
-
-  ask distanziatori [ muovi ]
+  ask distanziatori [ if cammina [ muovi ] ]
 
   display
   tick
@@ -125,28 +125,13 @@ to vigila
     ask persone in-cone visione 60
     [
       ifelse fuorilegge
-      [ ask vigile [set cammina false set label "!"]]
+      [ separate
+        ask vigile [set cammina false set label "!"]
+      ]
       [ ask vigile [set cammina true set label ""] ]
     ]
   ]
 end
-
-
-
-
-to separa-persone-troppo-vicine
-if any? persone-viste
-  [
-    ask persone in-cone visione 60
-    [
-      if any? flockmates
-      [ if distance nearest-neighbor < minimum-separation
-        [ separate ]
-      ]
-    ]
-  ]
-end
-
 
 to colora-distanza
 
@@ -180,8 +165,7 @@ to flock  ;; turtle procedure
   find-flockmates
   if any? flockmates
     [ find-nearest-neighbor
-      ifelse distance nearest-neighbor < minimum-separation
-        [  ]
+      if distance nearest-neighbor > minimum-separation
         [ cohere ]
   ]
 
@@ -205,7 +189,14 @@ end
 ;;; SEPARATE
 
 to separate  ;; turtle procedure
-  turn-away ([heading] of nearest-neighbor) 90
+  ;; la procedura fa si che quando vengono viste dal distanziatore
+  ;; le persone si girino di 180 gradi ( puntano nella direzione opposta )
+  ;; e si allontanino
+  ;;turn-away ([heading] of nearest-neighbor) 90
+  rt random 360
+  ;; qui possiamo inserire un check che fa fare fd finché non sono a distanza minima
+  ;; come richiesto dalla consegna
+  ;; però non so come l'hai implementata te quella cosa quindi attenderò.
   fd 1
 end
 
@@ -273,11 +264,11 @@ end
 GRAPHICS-WINDOW
 372
 22
-986
-637
+866
+517
 -1
 -1
-6.0
+4.812
 1
 10
 1
@@ -340,7 +331,7 @@ population
 population
 1.0
 50
-31.0
+50.0
 1.0
 1
 NIL
@@ -433,14 +424,14 @@ MONITOR
 11
 
 CHOOSER
-1123
-151
-1261
-196
+973
+32
+1111
+77
 movimenti
 movimenti
-"randomized" "squared"
-1
+"randomized" "squared" "lined"
+2
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -829,7 +820,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.2.0
+NetLogo 6.1.1
 @#$#@#$#@
 set population 200
 setup
