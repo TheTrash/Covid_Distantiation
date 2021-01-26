@@ -90,12 +90,15 @@ to go
 
   ask persone [ flock ]
   ask persone [ imposta-fuorilegge ]
-  ask persone [controlla-tick]
+  ask persone [ controlla-tick ]
   ask persone [ vedi-distanziatori ]
   ;;ask persone [controlla-sliders]
 
- ask persone [ if cammina [ fd 0.5] ] ;;non cammina solo quando il più vicino è fuori dalla sua distanza minima
-
+ ask persone [ ifelse cammina
+                  [ fd 0.5]
+                  [ rt random 360
+                    fd 1 ] ;;non cammina solo quando il più vicino è fuori dalla sua distanza minima
+  ]
 
 ;; azioni
   ask distanziatori [
@@ -181,6 +184,7 @@ to controlla-tick
   [set distanza-minima distanza-minima-1]
 end
 
+
 ;; Le persone hanno consapevolezza del fatto che
 ;; stiano infrangedno la legge
 to imposta-fuorilegge
@@ -217,7 +221,8 @@ to flock
       ifelse distance nearest-neighbor < distanza-minima
         [ separate
           set cammina true ]
-        [ set cammina false ] ]
+        [ convergi nearest-neighbor
+          set cammina false ] ]
   [set cammina true]
 end
 
@@ -344,11 +349,13 @@ to separate  ;; turtle procedure
   ;; le persone si girino di 180 gradi ( puntano nella direzione opposta )
   ;; e si allontanino
   ;;turn-away ([heading] of nearest-neighbor) 90
-  rt random 360
+  ;;rt random 360
+  ;; heading grado di orientamento corrente
+  turn-away heading 180
   ;; qui possiamo inserire un check che fa fare fd finché non sono a distanza minima
   ;; come richiesto dalla consegna
   ;; però non so come l'hai implementata te quella cosa quindi attenderò.
-  fd 1
+  ;; min distance
 end
 
 
@@ -365,8 +372,9 @@ end
 
 ;;; COHERE
 
-to cohere  ;; turtle procedure
-  turn-towards average-heading-towards-flockmates convergenza
+to convergi [persona-ferma] ;; turtle procedure
+  ;;turn-towards average-heading-towards-flockmates convergenza
+  set heading towards persona-ferma
 end
 
 to-report average-heading-towards-flockmates  ;; turtle procedure
@@ -381,7 +389,8 @@ to-report average-heading-towards-flockmates  ;; turtle procedure
 end
 
 ;;; HELPER PROCEDURES
-
+;; subtract headings fa sicuramente una sottrazione coi gradi
+;; tipo 90 - 180  -> 270
 to turn-towards [new-heading max-turn]  ;; turtle procedure
   turn-at-most (subtract-headings new-heading heading) max-turn
 end
@@ -476,7 +485,7 @@ population
 population
 1.0
 1000.0
-35.0
+15.0
 1.0
 1
 NIL
