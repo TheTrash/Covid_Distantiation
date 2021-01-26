@@ -96,8 +96,7 @@ to go
 
  ask persone [ ifelse cammina
                   [ fd 0.5]
-                  [ rt random 360
-                    fd 1 ] ;;non cammina solo quando il più vicino è fuori dalla sua distanza minima
+                  [ ];;rt random 360 fd 1 ] ;;non cammina solo quando il più vicino è fuori dalla sua distanza minima
   ]
 
 ;; azioni
@@ -219,10 +218,11 @@ to flock
   ifelse any? flockmates
     [ find-nearest-neighbor
       ifelse distance nearest-neighbor < distanza-minima
-        [ separate
+        [ separati
           set cammina true ]
         [ convergi nearest-neighbor
-          set cammina false ] ]
+          set cammina false ]
+  ]
   [set cammina true]
 end
 
@@ -286,8 +286,8 @@ to vigila
     [
       ifelse fuorilegge
         [
-          separate
           ask vigile [set cammina false set label "!"]
+          separa-persona
         ]
         [
           ask vigile [set cammina true set label "" ]
@@ -303,20 +303,6 @@ to vedi-persone
    set persone-viste other persone in-cone visione 60
 end
 
-to separa-persone-troppo-vicine
-if any? persone-viste
-  [
-    ask persone in-cone visione 60
-    [
-      find-flockmates
-      if any? flockmates
-      [find-nearest-neighbor
-      if distance nearest-neighbor < minimum-separation
-        [ separate ]
-      ]
-    ]
-  ]
-end
 
 
 
@@ -344,31 +330,30 @@ end
 
 ;;; SEPARATE
 
-to separate  ;; turtle procedure
+to separati  ;; turtle procedure
   ;; la procedura fa si che quando vengono viste dal distanziatore
   ;; le persone si girino di 180 gradi ( puntano nella direzione opposta )
   ;; e si allontanino
   ;;turn-away ([heading] of nearest-neighbor) 90
   ;;rt random 360
   ;; heading grado di orientamento corrente
-  turn-away heading 180
+
+  turn-away ([heading] of nearest-neighbor) 90
+
   ;; qui possiamo inserire un check che fa fare fd finché non sono a distanza minima
   ;; come richiesto dalla consegna
   ;; però non so come l'hai implementata te quella cosa quindi attenderò.
   ;; min distance
 end
 
+to separa-persona
 
-to-report average-flockmate-heading  ;; turtle procedure
-  ;; We can't just average the heading variables here.
-  ;; For example, the average of 1 and 359 should be 0,
-  ;; not 180.  So we have to use trigonometry.
-  let x-component sum [dx] of flockmates
-  let y-component sum [dy] of flockmates
-  ifelse x-component = 0 and y-component = 0
-    [ report heading ]
-    [ report atan x-component y-component ]
+  turn-away ([heading] of (min-one-of persone-vicino [distance myself]) ) 180
+  fd minimum-separation
+
 end
+
+
 
 ;;; COHERE
 
@@ -545,7 +530,7 @@ vision
 vision
 0.0
 10.0
-4.5
+4.0
 0.5
 1
 patches
