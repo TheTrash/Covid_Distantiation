@@ -287,7 +287,13 @@ to vigila
       ifelse fuorilegge
         [
           ask vigile [set cammina false set label "!"]
-          separa-persona
+          ;;separa-persona
+
+          if distanza-minima < minimum-separation
+          [set distanza-minima minimum-separation
+            set mantieni-per 100
+          ]
+
         ]
         [
           ask vigile [set cammina true set label "" ]
