@@ -45,7 +45,7 @@ globals [
 to setup
   clear-all
 
-  set offset popolazione
+  set offset popolazione;; + ceiling ( random 10 )
   create-persone popolazione
     [
       set color yellow - 2 + random 7    ;; definizione estetica dell'agente
@@ -62,12 +62,12 @@ to setup
       set cammina true
       set fuorilegge false               ;; ---------------------------------
   ]
-  create-distanziatori ( ceiling ( popolazione / 10 ) )
+  create-distanziatori ( ceiling ( popolazione / 5 ) )
   [
       set color blue                     ;; definizione estetica dell'agente
       set size 2
       set shape "square"
-      setxy  ((offset - who)* 10)   ((offset - who)* 10)
+      setxy  ((offset - who) *  ( world-width / 5 ) )* -1  ((offset - who) *  ( world-height / 5 )) * -1
       set label-color red                ;; ---------------------------------
 
       set mov movimenti                  ;; Variabili di comportamento
@@ -194,7 +194,7 @@ to osserva           ;; utilizzata dalle persone per decidere se separarsi o avv
       ifelse distance vicino-piu-vicino < distanza-minima
         [ separati
           set cammina true ]
-        [ convergi vicino-piu-vicino
+        [ convergi
           set cammina false ]
   ]
   [set cammina true]
@@ -224,22 +224,15 @@ end
 to muovi
   (ifelse
     mov = "randomized" [
-      rt random-float 360 fd 0.5
+      if ticks mod ( offset * 2 ) = 0
+      [
+        rt random-float 360
+      ]
+      fd 0.5
     ]
     mov = "squared" [
-      if ( xcor = (20 - (offset - who)* 5)  and heading = 90 ) [
-        rt 90
-      ]
-      if ( ycor = (-20 + (offset - who)* 5)  and heading = 180 ) [
-        rt 90
-      ]
-      if ( xcor = ( -20 + (offset - who)* 5)  and heading = 270 ) [
-        rt 90
-      ]
-      if ( ycor = ( 20 - (offset - who)* 5) and heading = 270 ) [
-        rt 90
-      ]
-      if ( ycor = ( 20 - (offset - who)* 5 ) and heading = 0 ) [
+      if ticks mod ( offset * 2 ) = 0
+      [
         rt 90
       ]
       fd 0.5
@@ -339,9 +332,9 @@ end
 
 ;;; COHERE
 
-to convergi [persona-ferma] ;; turtle procedure
+to convergi ;; turtle procedure
   ;;turn-towards average-heading-towards-flockmates convergenza
-  set heading towards persona-ferma - convergenza
+  set heading average-heading-towards-persone-viste
 end
 
 to-report average-heading-towards-persone-viste   ;; turtle procedure
@@ -351,8 +344,8 @@ to-report average-heading-towards-persone-viste   ;; turtle procedure
   let x-component mean [sin (towards myself + 180)] of persone-viste
   let y-component mean [cos (towards myself + 180)] of persone-viste
   ifelse x-component = 0 and y-component = 0
-    [ report heading ]
-    [ report atan x-component y-component ]
+    [ report heading ] ;; se punta già verso il punto medio
+    [ report atan x-component y-component ] ;; restituisce il punto medio a cui puntare
 end
 
 ;;; HELPER PROCEDURES
@@ -375,18 +368,17 @@ to turn-at-most [turn max-turn]  ;; turtle procedure
         [ lt max-turn ] ]
     [ rt turn ]
 end
-
 @#$#@#$#@
 GRAPHICS-WINDOW
-305
+278
 10
-810
-516
+853
+586
 -1
 -1
-7.0
+5.614
 1
-10
+20
 1
 1
 1
@@ -394,10 +386,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--35
-35
--35
-35
+0
+100
+0
+100
 1
 1
 1
@@ -447,7 +439,7 @@ popolazione
 popolazione
 1.0
 50
-20.0
+30.0
 1.0
 1
 NIL
@@ -517,7 +509,7 @@ CHOOSER
 movimenti
 movimenti
 "randomized" "squared" "lined"
-1
+0
 
 SLIDER
 5
@@ -921,7 +913,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.1.1
+NetLogo 6.2.0
 @#$#@#$#@
 set population 200
 setup
