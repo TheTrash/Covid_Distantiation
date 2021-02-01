@@ -3,146 +3,132 @@ breed [persone persona]
 
 
 persone-own [
-  flockmates         ;; agentset of nearby persone
-  nearest-neighbor   ;; closest one of our flockmates
-  distanziatori-visti
-  fuorilegge
-  persone-vicino
-  cammina
+  persone-viste         ;; insieme delle persone viste
+  vicino-piu-vicino     ;; persona vista più vicina
+  distanziatori-visti   ;; insieme dei distanziatori visti
+  fuorilegge            ;; indica se la persona infrange la legge non rispettando la distanza minima globale
 
-  vista
-  convergenza
-  distanza-minima
+  persone-vicino        ;; insieme delle persone vicine nel raggio di distanza minima
+  cammina               ;; usato come flag per il movimento. Se falso, la persona si ferma
 
-  distanza-minima-1  ;;usata per memorizzare la distanza minima quando viene sostituita
-  mantieni-per ;;indica i tick che devono passare da quando è stata vista la guardia
-]
+  visione               ;; lunghezza in pixel della vista
+  angolo-visione        ;; gradi del cono visivo
+
+  convergenza           ;; valore che rappresenta la tendenza della persona nel convergere verso altre persone
+  distanza-minima       ;; distanza minima rispettata tra le persone
+
+  distanza-minima-tmp   ;; usata per memorizzare la distanza minima quando viene sostituita
+  mantieni-per          ;; numero dei tick trascorsi prima di cambiare da distanza minima globale alla propria distanza
+  ]
 
 distanziatori-own [
-  persone-viste
-  visione
-  cammina
+  persone-viste         ;; insieme delle persone viste
 
-  mov ;; tipo di movimento
+  visione               ;; lunghezza in pixel della vista
+  angolo-visione        ;; gradi del cono visivo
+
+  cammina               ;; usato come flag per il movimento. Se falso, il distanziatore si ferma
+
+  mov                   ;; tipo di movimento selezionato del distanziatore
 ]
 
 globals [
-  ;;usata per colorare il giro di distanza delle persoen
-  giro
+  giro          ;; sata per colorare il giro di distanza delle persone
 
-  ;;usato per memorizzare temporaneamente l'id dei distanziatori
-  id
+  id            ;; usato per memorizzare temporaneamente l'id dei distanziatori
 
-  ;; serve per il plot dei distanziatori, ne modifica la distanza di spawn
-  offset
-  ;;si usano nel caso in cui si vogliono aggiornare i parametri
-  vista-globale
-  convergenza-globale
-  distanza-minima-media-globale
+  offset        ;; serve per il plot dei distanziatori, ne modifica la distanza di spawn
+
 ]
 
 
 to setup
   clear-all
-  set offset population
-  create-persone population
-    [ set color yellow - 2 + random 7  ;; random shades look nice
-      set size 1.5  ;; easier to see
+
+  set offset popolazione;; + ceiling ( random 10 )
+  create-persone popolazione
+    [
+      set color yellow - 2 + random 7    ;; definizione estetica dell'agente
+      set size 1.5
       setxy random-xcor random-ycor
       set shape "person"
-      set flockmates no-turtles
-      set fuorilegge false
+      set persone-viste no-turtles       ;; ---------------------------------
 
+      set angolo-visione 120             ;; Variabili di comportamento
       set mantieni-per 0
       assegna-vista
       assegna-convergenza
       assegna-distanza-minima
-
       set cammina true
-
+      set fuorilegge false               ;; ---------------------------------
   ]
-  create-distanziatori ( ceiling ( population / 10 ) )
+  create-distanziatori ( ceiling ( popolazione / 5 ) )
   [
-      set mov movimenti
-      set visione vision * 2
-      set color blue  ;; random shades look nice
-      set size 2  ;; easier to see
+      set color blue                     ;; definizione estetica dell'agente
+      set size 2
       set shape "square"
-      setxy  ((offset - who)* 10)   (offset - who)* 10
+      setxy  ((offset - who) *  ( world-width / 5 ) )* -1  ((offset - who) *  ( world-height / 5 )) * -1
+      set label-color red                ;; ---------------------------------
+
+      set mov movimenti                  ;; Variabili di comportamento
       set heading 90
-      set cammina true
-      set label-color red
+      set visione visione-globale * 2
+      set angolo-visione 60
+      set cammina true                  ;; ---------------------------------
   ]
 
-
-  set vista-globale vision
-  set convergenza-globale max-cohere-turn
-  set distanza-minima-media-globale distanza-minima-media
 
   reset-ticks
 end
 
 to go
   clear-patches
-  ;;aggiorno il valore di visione dei distanziatori
-  ;;ask distanziatori [set visione vision * 2 ]
 
-
-  ask persone [ flock ]
+  ask persone [ osserva ]
   ask persone [ imposta-fuorilegge ]
   ask persone [ controlla-tick ]
   ask persone [ vedi-distanziatori ]
-  ;;ask persone [controlla-sliders]
+  ask persone [ if cammina [ fd 0.5 ] ]   ;;se cammina è vero, la persona continua a camminare
 
- ask persone [ ifelse cammina
-                  [ fd 0.5]
-                  [ ];;rt random 360 fd 1 ] ;;non cammina solo quando il più vicino è fuori dalla sua distanza minima
-  ]
+  ;;ask persone [controlla-sliders]
 
 ;; azioni
   ask distanziatori [
-    ;; set the persone viste list
-    set persone-viste other persone in-cone visione 60
-    ;; appli the vigila rules
+    ;; assegno le persone viste alla variabile
+    set persone-viste other persone in-cone visione angolo-visione
+    ;; applico la regola vigila
     vigila
   ]
 
-  ;;ripete quello che fa la funzione sopra
-  ;;ask distanziatori [separa-persone-troppo-vicine]
+ ask distanziatori [ if cammina [ muovi ] ]          ;;non cammina quando vede fuorilegge
 
-  ;; the following line is used to make the persone
-  ;; animate more smoothly.
-
- ask distanziatori [ if cammina [ muovi ] ] ;;non cammina quando vede fuorilegge
-
-  ;; for greater efficiency, at the expense of smooth
-  ;; animation, substitute the following line instead:
-  ;;   ask persone [ fd 1 ]
     ;; inizio render ---------
   ask distanziatori [
-    ask patches in-cone visione 60 [set pcolor blue]
+    ask patches in-cone visione angolo-visione [set pcolor blue]
   ]
 
   ask persone [ colora-distanza ]
   ask persone [ colora-vista ]
   display
-;; fine render ---------
+   ;; fine render ---------
+
   tick
 end
 
 ;; FUNZIONI INERENTI ALLE PERSONE ----------------------------------------------
 ;; si può fare nella funzione dentro il set persone?
+
 to assegna-vista
-  set vista random-near vision
+  set visione random-near visione-globale
 end
 
 to assegna-convergenza
-  set convergenza random-near max-cohere-turn
+  set convergenza random-near convergenza-globale
 end
 
 to assegna-distanza-minima
   set distanza-minima random-near distanza-minima-media
-  set distanza-minima-1 distanza-minima
+  set distanza-minima-tmp distanza-minima
 end
 ;; per le persone, assegna la distanza secondo la distribuzione normale
 ;; per rendere le persone un po' diverse ed abbiano  una diversa concezione
@@ -155,21 +141,21 @@ to-report random-near [center]  ;; turtle procedure
 end
 
 
-to vedi-distanziatori
+to vedi-distanziatori  ;;cerca i distanziatori impostando di conseguenza la distanza-minima da mantenere
 
   trova-distanziatori
   if any? distanziatori-visti
   [
-   if distanza-minima < minimum-separation
-    [set distanza-minima minimum-separation
+   if distanza-minima < distanza-minima-globale
+    [set distanza-minima distanza-minima-globale
      set mantieni-per 100
     ]
 
   ]
 end
 
-to trova-distanziatori
-  set distanziatori-visti other distanziatori in-cone vista 60
+to trova-distanziatori     ;;trova l'insieme dei distanziatori visti dalla persona
+  set distanziatori-visti other distanziatori in-cone visione angolo-visione
 end
 
 ;; check per i tick di tempo per rimanere distanti
@@ -180,12 +166,12 @@ to controlla-tick
   [set mantieni-per mantieni-per - 1]
 
   if mantieni-per = 0
-  [set distanza-minima distanza-minima-1]
+  [set distanza-minima distanza-minima-tmp]
 end
 
 
 ;; Le persone hanno consapevolezza del fatto che
-;; stiano infrangedno la legge
+;; stiano infrangendo la legge
 to imposta-fuorilegge
   trova-persone-intorno
   ifelse any? persone-vicino
@@ -194,45 +180,33 @@ to imposta-fuorilegge
 
 end
 
-to trova-persone-intorno
-  set persone-vicino other persone in-radius minimum-separation
+to trova-persone-intorno           ;; trova le persone presenti nel raggio della minima separazione
+  set persone-vicino other persone in-radius distanza-minima-globale
 end
 
 ;; FUNZIONE DI SISTEMA
-to controlla-sliders
-  if (vista-globale != vision)
-  [assegna-vista
-   set vista-globale vision ]
 
-  if (convergenza-globale != max-cohere-turn)
-  [assegna-convergenza
-   set convergenza-globale max-cohere-turn ]
 
-  if (distanza-minima-media-globale != distanza-minima-media)
-  [assegna-distanza-minima
-  set distanza-minima-media-globale distanza-minima-media ]
-end
-
-to flock
-  find-flockmates
-  ifelse any? flockmates
-    [ find-nearest-neighbor
-      ifelse distance nearest-neighbor < distanza-minima
+to osserva           ;; utilizzata dalle persone per decidere se separarsi o avvicinarsi e fermarsi
+  trova-persone-viste
+  ifelse any? persone-viste
+    [ trova-piu-vicino
+      ifelse distance vicino-piu-vicino < distanza-minima
         [ separati
           set cammina true ]
-        [ convergi nearest-neighbor
+        [ convergi
           set cammina false ]
   ]
   [set cammina true]
 end
 
 
-to find-flockmates  ;; turtle procedure
-  set flockmates other persone in-cone vista 60
+to trova-persone-viste       ;; assegna alla variabile persone-viste l'insieme delle persone presenti nel raggio visivo
+  set persone-viste  other persone in-cone visione angolo-visione
 end
 
-to find-nearest-neighbor ;; turtle procedure
-  set nearest-neighbor min-one-of flockmates [distance myself]
+to trova-piu-vicino          ;; trova la persona piu vicina tra quelle viste
+  set vicino-piu-vicino min-one-of persone-viste  [distance myself]
 end
 
 
@@ -250,22 +224,15 @@ end
 to muovi
   (ifelse
     mov = "randomized" [
-      rt random-float 360 fd 0.5
+      if ticks mod ( offset * 2 ) = 0
+      [
+        rt random-float 360
+      ]
+      fd 0.5
     ]
     mov = "squared" [
-      if ( xcor = (20 - (offset - who)* 5)  and heading = 90 ) [
-        rt 90
-      ]
-      if ( ycor = (-20 + (offset - who)* 5)  and heading = 180 ) [
-        rt 90
-      ]
-      if ( xcor = ( -20 + (offset - who)* 5)  and heading = 270 ) [
-        rt 90
-      ]
-      if ( ycor = ( 20 - (offset - who)* 5) and heading = 270 ) [
-        rt 90
-      ]
-      if ( ycor = ( 20 - (offset - who)* 5 ) and heading = 0 ) [
+      if ticks mod ( offset * 2 ) = 0
+      [
         rt 90
       ]
       fd 0.5
@@ -279,15 +246,24 @@ to muovi
 end
 
 
-to vigila
+to vigila           ;; controlla le persone viste, se infrangono la legge manterranno la distanza-minima-globale
   let vigile distanziatore who
   ifelse any? persone-viste [
-    ask persone in-cone visione 60
+    ask persone in-cone visione angolo-visione
     [
       ifelse fuorilegge
         [
           ask vigile [set cammina false set label "!"]
-          separa-persona
+          ;;separa-persona
+
+          if distanza-minima < distanza-minima-globale
+          [set distanza-minima distanza-minima-globale
+            set mantieni-per 100
+          ]
+
+          if not cammina ;; nuova aggiunta non so se funziona
+          [set heading ([towards myself + 180] of min-one-of persone-vicino [distance myself])]
+
         ]
         [
           ask vigile [set cammina true set label "" ]
@@ -300,7 +276,7 @@ end
 
 
 to vedi-persone
-   set persone-viste other persone in-cone visione 60
+   set persone-viste other persone in-cone visione angolo-visione
 end
 
 
@@ -316,13 +292,13 @@ to colora-distanza
 end
 
 to colora-vista
-  ask patches in-cone vista 60 [set pcolor white]
+  ask patches in-cone visione angolo-visione [set pcolor white]
 end
 
 
 to-report %distanza
   ifelse any? persone
-    [report count persone with [count other persone in-radius minimum-separation > 0 ] ]
+    [report count persone with [count other persone in-radius distanza-minima-globale > 0 ] ]
     [report 0]
 end
 
@@ -334,11 +310,10 @@ to separati  ;; turtle procedure
   ;; la procedura fa si che quando vengono viste dal distanziatore
   ;; le persone si girino di 180 gradi ( puntano nella direzione opposta )
   ;; e si allontanino
-  ;;turn-away ([heading] of nearest-neighbor) 90
-  ;;rt random 360
+
   ;; heading grado di orientamento corrente
 
-  turn-away ([heading] of nearest-neighbor) 90
+  turn-away ([heading] of vicino-piu-vicino) 90
 
   ;; qui possiamo inserire un check che fa fare fd finché non sono a distanza minima
   ;; come richiesto dalla consegna
@@ -349,7 +324,7 @@ end
 to separa-persona
 
   turn-away ([heading] of (min-one-of persone-vicino [distance myself]) ) 180
-  fd minimum-separation
+  fd distanza-minima-globale
 
 end
 
@@ -357,20 +332,20 @@ end
 
 ;;; COHERE
 
-to convergi [persona-ferma] ;; turtle procedure
+to convergi ;; turtle procedure
   ;;turn-towards average-heading-towards-flockmates convergenza
-  set heading towards persona-ferma
+  set heading average-heading-towards-persone-viste
 end
 
-to-report average-heading-towards-flockmates  ;; turtle procedure
+to-report average-heading-towards-persone-viste   ;; turtle procedure
   ;; "towards myself" gives us the heading from the other turtle
   ;; to me, but we want the heading from me to the other turtle,
   ;; so we add 180
-  let x-component mean [sin (towards myself + 180)] of flockmates
-  let y-component mean [cos (towards myself + 180)] of flockmates
+  let x-component mean [sin (towards myself + 180)] of persone-viste
+  let y-component mean [cos (towards myself + 180)] of persone-viste
   ifelse x-component = 0 and y-component = 0
-    [ report heading ]
-    [ report atan x-component y-component ]
+    [ report heading ] ;; se punta già verso il punto medio
+    [ report atan x-component y-component ] ;; restituisce il punto medio a cui puntare
 end
 
 ;;; HELPER PROCEDURES
@@ -393,23 +368,17 @@ to turn-at-most [turn max-turn]  ;; turtle procedure
         [ lt max-turn ] ]
     [ rt turn ]
 end
-
-
-
-
-; Copyright 1998 Uri Wilensky.
-; See Info tab for full copyright and license.
 @#$#@#$#@
 GRAPHICS-WINDOW
-250
+278
 10
-755
-516
+853
+586
 -1
 -1
-7.0
+5.614
 1
-10
+20
 1
 1
 1
@@ -417,10 +386,10 @@ GRAPHICS-WINDOW
 1
 1
 1
--35
-35
--35
-35
+0
+100
+0
+100
 1
 1
 1
@@ -466,59 +435,14 @@ SLIDER
 51
 232
 84
-population
-population
+popolazione
+popolazione
 1.0
-1000.0
-15.0
+50
+30.0
 1.0
 1
 NIL
-HORIZONTAL
-
-SLIDER
-4
-217
-237
-250
-max-align-turn
-max-align-turn
-0.0
-20.0
-0.0
-0.25
-1
-degrees
-HORIZONTAL
-
-SLIDER
-4
-251
-237
-284
-max-cohere-turn
-max-cohere-turn
-0.0
-20.0
-20.0
-0.25
-1
-degrees
-HORIZONTAL
-
-SLIDER
-4
-285
-237
-318
-max-separate-turn
-max-separate-turn
-0.0
-20.0
-20.0
-0.25
-1
-degrees
 HORIZONTAL
 
 SLIDER
@@ -526,10 +450,10 @@ SLIDER
 135
 232
 168
-vision
-vision
+visione-globale
+visione-globale
 0.0
-10.0
+10
 4.0
 0.5
 1
@@ -537,14 +461,14 @@ patches
 HORIZONTAL
 
 SLIDER
-9
-169
-232
-202
-minimum-separation
-minimum-separation
+7
+175
+240
+208
+distanza-minima-globale
+distanza-minima-globale
 0.0
-5.0
+5
 5.0
 0.25
 1
@@ -552,10 +476,10 @@ patches
 HORIZONTAL
 
 MONITOR
-80
-340
-152
-385
+154
+358
+226
+403
 %distanza
 %distanza
 2
@@ -563,29 +487,44 @@ MONITOR
 11
 
 SLIDER
-34
-394
-208
-427
+5
+271
+238
+304
 distanza-minima-media
 distanza-minima-media
+0.50
+7
+2.0
+0.25
 1
-10
-3.0
-1
-1
-NIL
+patches
 HORIZONTAL
 
 CHOOSER
-57
-445
-195
-490
+10
+358
+148
+403
 movimenti
 movimenti
 "randomized" "squared" "lined"
+0
+
+SLIDER
+5
+220
+238
+253
+convergenza-globale
+convergenza-globale
+0.0
+20.0
+10.0
+0.25
 1
+gradi
+HORIZONTAL
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -974,7 +913,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.1.1
+NetLogo 6.2.0
 @#$#@#$#@
 set population 200
 setup
