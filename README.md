@@ -16,14 +16,15 @@ Visualizzatore di persone.distanza < Globale.distanza
 	    - Cono visivo
 	    - Distanza di attrazione minima & massima
 	    - Azioni
-    * Azioni:
+    * Comportamenti:
         - Movimento randomico che tende verso le altre persone
         - Se viene visto un distanziatore e sono vicine ad altre persone si allontanano fino ad essere alla distanza minima globale
 * Distanziatori
     * Parametri:
         - Cono Visivo ( + ampio rispetto alle persone )
         - Distanza Minima Globale da far rispettare 
-    * Azioni: 
+        - Movimento
+    * Comportamenti: 
         - 1° Stazionario
         - 2° Random
         - 3° Giro
