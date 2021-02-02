@@ -104,7 +104,7 @@ to go
 
     ;; inizio render ---------
   ask distanziatori [
-    ask patches in-cone visione angolo-visione [set pcolor blue]
+    ask patches in-cone visione angolo-visione [set pcolor blue - 3]
   ]
 
   ask persone [ colora-distanza ]
@@ -194,7 +194,7 @@ to osserva           ;; utilizzata dalle persone per decidere se separarsi o avv
       ifelse distance vicino-piu-vicino < distanza-minima
         [ separati
           set cammina true ]
-        [ convergi
+      [ if cammina [convergi]
           set cammina false ]
   ]
   [set cammina true]
@@ -292,7 +292,7 @@ to colora-distanza
 end
 
 to colora-vista
-  ask patches in-cone visione angolo-visione [set pcolor white]
+  ask patches in-cone visione angolo-visione [set pcolor white - 3]
 end
 
 
@@ -333,8 +333,7 @@ end
 ;;; COHERE
 
 to convergi ;; turtle procedure
-  ;;turn-towards average-heading-towards-flockmates convergenza
-  set heading average-heading-towards-persone-viste
+  turn-towards average-heading-towards-persone-viste convergenza
 end
 
 to-report average-heading-towards-persone-viste   ;; turtle procedure
@@ -349,8 +348,6 @@ to-report average-heading-towards-persone-viste   ;; turtle procedure
 end
 
 ;;; HELPER PROCEDURES
-;; subtract headings fa sicuramente una sottrazione coi gradi
-;; tipo 90 - 180  -> 270
 to turn-towards [new-heading max-turn]  ;; turtle procedure
   turn-at-most (subtract-headings new-heading heading) max-turn
 end
@@ -913,7 +910,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.2.0
+NetLogo 6.1.1
 @#$#@#$#@
 set population 200
 setup
