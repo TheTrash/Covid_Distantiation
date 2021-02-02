@@ -288,7 +288,7 @@ to colora-vista
   ask patches in-cone visione angolo-visione [set pcolor white - 3]
 end
 
-to-report %distanza
+to-report conta-fuorilegge
   ifelse any? persone
     [report count persone with [count other persone in-radius distanza-minima-globale > 0 ] ]
     [report 0]
@@ -446,10 +446,10 @@ HORIZONTAL
 MONITOR
 154
 358
-226
+271
 403
-Fuorilegge
-%distanza
+Numero Fuorilegge
+conta-fuorilegge
 2
 1
 11
