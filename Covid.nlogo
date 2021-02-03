@@ -402,7 +402,7 @@ popolazione
 popolazione
 1.0
 50
-25.0
+30.0
 1.0
 1
 NIL
@@ -417,7 +417,7 @@ visione-globale
 visione-globale
 1
 10
-2.5
+4.0
 0.5
 1
 patches
@@ -431,8 +431,8 @@ SLIDER
 distanza-minima-globale
 distanza-minima-globale
 1.0
-5
-3.0
+10
+4.0
 0.5
 1
 patches
@@ -457,8 +457,8 @@ SLIDER
 distanza-minima-percepita
 distanza-minima-percepita
 1
-10
-2.0
+5
+4.0
 0.5
 1
 patches
@@ -472,7 +472,7 @@ CHOOSER
 movimenti
 movimenti
 "randomized" "squared" "lined"
-2
+0
 
 SLIDER
 9
@@ -483,7 +483,7 @@ convergenza-globale
 convergenza-globale
 0
 20.0
-2.0
+20.0
 0.5
 1
 gradi
