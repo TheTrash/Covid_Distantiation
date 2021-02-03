@@ -59,16 +59,16 @@ Si consiglia di provare i casi studio qua riportati:
 * Distanza minima percepita uguale alla globale 
 
 Scaletta Presentazione:
-- Introduzione Mattia
+- Introduzione Mattia |
 Scelte fatte e perche'
-- Ambiente Matteo
+- Ambiente Matteo |
 GUI varia
-- Persone Matteo
+- Persone Matteo |
 A voce le principali funzioni, senza troppo dettaglio
-- Distanziatori Mattia
+- Distanziatori Mattia |
 A voce le principali funzioni, senza troppo dettaglio
-- Esperimenti 
+- Esperimenti |
 Movimento dei Distanziatori Mattia
-Parametri Persone Matteo
-- Conclusioni assieme
+Parametri Persone Matteo 
+- Conclusioni assieme 
 - Rapporto nella realtà assieme
