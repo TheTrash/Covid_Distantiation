@@ -125,7 +125,7 @@ to assegna-convergenza
 end
 
 to assegna-distanza-minima
-  set distanza-minima random-near distanza-minima-media
+  set distanza-minima random-near distanza-minima-percepita
   set distanza-minima-tmp distanza-minima
 end
 ;; per le persone, assegna la distanza secondo la distribuzione normale
@@ -361,9 +361,9 @@ ticks
 
 BUTTON
 39
-93
+68
 116
-126
+101
 NIL
 setup
 NIL
@@ -378,9 +378,9 @@ NIL
 
 BUTTON
 122
-93
+68
 203
-126
+101
 NIL
 go
 T
@@ -394,10 +394,10 @@ NIL
 0
 
 SLIDER
-9
-51
-232
-84
+11
+23
+234
+56
 popolazione
 popolazione
 1.0
@@ -410,9 +410,9 @@ HORIZONTAL
 
 SLIDER
 9
-135
+224
 261
-168
+257
 visione-globale
 visione-globale
 1
@@ -425,14 +425,14 @@ HORIZONTAL
 
 SLIDER
 7
-175
-261
-208
+167
+265
+200
 distanza-minima-globale
 distanza-minima-globale
 1.0
 5
-2.0
+3.0
 0.5
 1
 patches
@@ -450,12 +450,12 @@ conta-fuorilegge
 11
 
 SLIDER
-5
-271
-261
-304
-distanza-minima-media
-distanza-minima-media
+7
+117
+267
+150
+distanza-minima-percepita
+distanza-minima-percepita
 1
 10
 2.0
@@ -475,10 +475,10 @@ movimenti
 2
 
 SLIDER
-5
-220
-260
-253
+9
+274
+264
+307
 convergenza-globale
 convergenza-globale
 0
