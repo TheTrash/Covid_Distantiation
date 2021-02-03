@@ -57,3 +57,18 @@ Si consiglia di provare i casi studio qua riportati:
 * Distanza minima percepita minore della globale
 * Distanza minima percepita maggiore della globale 
 * Distanza minima percepita uguale alla globale 
+
+Scaletta Presentazione:
+-Introduzione Mattia
+Scelte fatte e perche'
+-Ambiente Matteo
+GUI varia
+-Persone Matteo
+A voce le principali funzioni, senza troppo dettaglio
+-Distanziatori Mattia
+A voce le principali funzioni, senza troppo dettaglio
+-Esperimenti 
+Movimento dei Distanziatori Mattia
+Parametri Persone Matteo
+-Conclusioni assieme
+-Rapporto nella realtà assieme
