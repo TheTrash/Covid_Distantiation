@@ -402,7 +402,7 @@ popolazione
 popolazione
 1.0
 50
-30.0
+25.0
 1.0
 1
 NIL
@@ -411,13 +411,13 @@ HORIZONTAL
 SLIDER
 9
 135
-232
+261
 168
 visione-globale
 visione-globale
-0.0
+1
 10
-4.0
+2.5
 0.5
 1
 patches
@@ -426,23 +426,23 @@ HORIZONTAL
 SLIDER
 7
 175
-240
+261
 208
 distanza-minima-globale
 distanza-minima-globale
-0.0
+1.0
 5
-5.0
-0.25
+2.0
+0.5
 1
 patches
 HORIZONTAL
 
 MONITOR
-154
-358
-271
-403
+149
+321
+266
+366
 Numero Fuorilegge
 conta-fuorilegge
 2
@@ -452,42 +452,60 @@ conta-fuorilegge
 SLIDER
 5
 271
-238
+261
 304
 distanza-minima-media
 distanza-minima-media
-0.50
-7
+1
+10
 2.0
-0.25
+0.5
 1
 patches
 HORIZONTAL
 
 CHOOSER
-10
-358
-148
-403
+6
+321
+144
+366
 movimenti
 movimenti
 "randomized" "squared" "lined"
-0
+2
 
 SLIDER
 5
 220
-238
+260
 253
 convergenza-globale
 convergenza-globale
-0.0
+0
 20.0
-10.0
-0.25
+2.0
+0.5
 1
 gradi
 HORIZONTAL
+
+PLOT
+14
+379
+261
+566
+Fuorillegge
+NIL
+NIL
+0.0
+10.0
+0.0
+10.0
+true
+false
+"" ""
+PENS
+"default" 1.0 0 -16777216 true "" "plot conta-fuorilegge"
 
 @#$#@#$#@
 ## WHAT IS IT?
@@ -876,7 +894,7 @@ false
 Polygon -7500403 true true 270 75 225 30 30 225 75 270
 Polygon -7500403 true true 30 75 75 30 270 225 225 270
 @#$#@#$#@
-NetLogo 6.1.1
+NetLogo 6.2.0
 @#$#@#$#@
 set population 200
 setup
