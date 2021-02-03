@@ -58,7 +58,7 @@ Si consiglia di provare i casi studio qua riportati:
 * Distanza minima percepita maggiore della globale 
 * Distanza minima percepita uguale alla globale 
 
-Scaletta Presentazione:
+#  Scaletta Presentazione
 - Introduzione Mattia |
 Scelte fatte e perche'
 - Ambiente Matteo |
