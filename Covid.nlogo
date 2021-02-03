@@ -94,8 +94,6 @@ to go
 
 ;; azioni
   ask distanziatori [
-    ;; assegno le persone viste alla variabile
-    set persone-viste other persone in-cone visione angolo-visione
     ;; applico la regola vigila
     vigila
   ]
@@ -144,11 +142,10 @@ end
 ;; simula la "furbizia" di quando avvistando i distanziatori
 ;; si mettono in "sicurezza" aumentando le distanze
 to controlla-tick
-  if mantieni-per > 0
+  ifelse mantieni-per = 0
+  [set distanza-minima distanza-minima-tmp]
   [set mantieni-per mantieni-per - 1]
 
-  if mantieni-per = 0
-  [set distanza-minima distanza-minima-tmp]
 end
 
 
@@ -241,8 +238,10 @@ to muovi
   ])
 end
 
-
-to vigila           ;; controlla le persone viste, se infrangono la legge manterranno la distanza-minima-globale
+;; controlla le persone viste, se infrangono la legge manterranno la distanza-minima-globale
+to vigila
+  ;; assegno le persone viste alla variabile
+  set persone-viste other persone in-cone visione angolo-visione
   let vigile distanziatore who
   ifelse any? persone-viste [
     ask persone in-cone visione angolo-visione
@@ -250,16 +249,12 @@ to vigila           ;; controlla le persone viste, se infrangono la legge manter
       ifelse fuorilegge
         [
           ask vigile [set cammina false set label "!"]
-          ;;separa-persona
-
           if distanza-minima < distanza-minima-globale
           [set distanza-minima distanza-minima-globale
             set mantieni-per 100
           ]
-
-          if not cammina ;; nuova aggiunta non so se funziona
+          if not cammina
           [set heading ([towards myself + 180] of min-one-of persone-vicino [distance myself])]
-
         ]
         [
           ask vigile [set cammina true set label "" ]
@@ -288,7 +283,7 @@ to colora-vista
   ask patches in-cone visione angolo-visione [set pcolor white - 3]
 end
 
-to-report %distanza
+to-report conta-fuorilegge
   ifelse any? persone
     [report count persone with [count other persone in-radius distanza-minima-globale > 0 ] ]
     [report 0]
@@ -329,7 +324,7 @@ end
 
 ;; turn right by "turn" degrees (or left if "turn" is negative),
 ;; but never turn more than "max-turn" degrees
-to turn-at-most [turn max-turn]  ;; turtle procedure
+to turn-at-most [turn max-turn]
   ifelse abs turn > max-turn
     [ ifelse turn > 0
         [ rt max-turn ]
@@ -446,10 +441,10 @@ HORIZONTAL
 MONITOR
 154
 358
-226
+271
 403
-Fuorilegge
-%distanza
+Numero Fuorilegge
+conta-fuorilegge
 2
 1
 11
