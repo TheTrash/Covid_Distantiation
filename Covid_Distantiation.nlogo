@@ -72,7 +72,7 @@ to setup
 
       set mov movimenti                  ;; Variabili di comportamento
       set heading 90
-      set visione visione-globale * 2
+      set visione visione-globale * variazione-visione-distanziatori
       set angolo-visione 60
       set cammina true                  ;; ---------------------------------
   ]
@@ -360,10 +360,10 @@ ticks
 30.0
 
 BUTTON
-39
-68
-116
-101
+43
+67
+120
+100
 NIL
 setup
 NIL
@@ -377,10 +377,10 @@ NIL
 1
 
 BUTTON
-122
-68
-203
-101
+159
+67
+240
+100
 NIL
 go
 T
@@ -396,7 +396,7 @@ NIL
 SLIDER
 11
 23
-234
+265
 56
 popolazione
 popolazione
@@ -410,9 +410,9 @@ HORIZONTAL
 
 SLIDER
 9
+191
+263
 224
-261
-257
 visione-globale
 visione-globale
 1
@@ -424,10 +424,10 @@ patches
 HORIZONTAL
 
 SLIDER
-7
-167
-265
-200
+8
+146
+266
+179
 distanza-minima-globale
 distanza-minima-globale
 1.0
@@ -451,9 +451,9 @@ conta-fuorilegge
 
 SLIDER
 7
-117
-267
-150
+110
+265
+143
 distanza-minima-percepita
 distanza-minima-percepita
 1
@@ -475,10 +475,10 @@ movimenti
 0
 
 SLIDER
-9
-274
-264
-307
+6
+282
+261
+315
 convergenza-globale
 convergenza-globale
 0
@@ -507,6 +507,21 @@ false
 PENS
 "default" 1.0 0 -16777216 true "" "plot conta-fuorilegge"
 
+SLIDER
+9
+227
+261
+260
+variazione-visione-distanziatori
+variazione-visione-distanziatori
+1
+5
+5.0
+1
+1
+NIL
+HORIZONTAL
+
 @#$#@#$#@
 ## WHAT IS IT?
 
@@ -531,7 +546,6 @@ PENS
 
 
 ## CREDITS AND REFERENCES
-
 @#$#@#$#@
 default
 true
